@@ -14,7 +14,7 @@ class TestPerformance:
         self.queries = queries
         
     
-    def get_performance(self):
+    def get_performance(self): 
         try:
             conn = connect(host=self.host, port=self.port)
             cursor = conn.cursor()
@@ -49,14 +49,15 @@ class TestPerformance:
                     # save run time
                     query_performance.append(run_time)
                     
-                all_query_performance[query] = query_performance
+                all_query_performance[query.strip()] = query_performance
             
             return impala_version, pd.DataFrame(all_query_performance)
             
-        except Exception as e: 
-            raise(e)
-        
+        except Exception as e:
+            self.save_result(impala_version, all_query_performance)
+            raise
+         
     
     def save_result(self, impala_version: str, result: pd.DataFrame):
-        return result.T.to_csv(f'apache_{impala_version}_performance_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv')
+        return result.to_csv(f'apache_{impala_version}_performance_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv')
         

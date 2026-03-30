@@ -43,8 +43,7 @@ def get_queries():
             AND mcc BETWEEN 500 AND 520;
         '''
     )
-    
-    
+     
     # GROUP BY statement
     # 1. Roaming traffic volume by operator
     querylist.add(
@@ -57,52 +56,12 @@ def get_queries():
             par_year = 2024
             AND par_month = 6
         GROUP BY 
-            mcc, mnc, op_code
-        ORDER BY 
-            total_tx DESC;
+            mcc, mnc, op_code 
         '''
     )
-    
-    # 2. Hourly traffic Breakdown
-    querylist.add(
-        '''
-        SELECT 
-            tx_date, tx_hour, status, COUNT(*) AS tx_count, COUNT(DISTINCT msisdn) AS unique_msisdn
-        FROM 
-            roam352_report_digi.data_em
-        WHERE 
-            par_year = 2024
-            AND par_month = 6
-            AND par_date = 5
-        GROUP BY 
-            tx_date, tx_hour, status
-        ORDER BY 
-            tx_date, tx_hour;
-        '''
-    )
-    
-    # WINDOW clause
-    # 1. Rank subscribers by transaction count per operator
-    querylist.add(
-        '''
-        SELECT 
-            msisdn, mcc, mnc, tx_count, RANK() OVER (PARTITION BY mcc, mnc ORDER BY tx_count DESC) AS rnk
-        FROM (
-            SELECT 
-                msisdn, mcc, mnc, COUNT(*) AS tx_count
-            FROM 
-                roam352_report_digi.data_em
-            WHERE 
-                par_year = 2024
-                AND par_month = 6
-                AND msisdn != 0
-            GROUP BY 
-                msisdn, mcc, mnc
-        ) t;
-        '''
-    )
-    
-    # 2. Running total of transactions per hour within a day
+     
+    # WINDOW clause 
+    # 1. Running total of transactions per hour within a day
     querylist.add(
         '''
         SELECT tx_date, tx_hour, tx_count,
@@ -128,29 +87,8 @@ def get_queries():
         '''
     )
     
-    # JOIN statement
-    # 1. Find subscribers with both op_code 2 and 3 on the same day
-    querylist.add(
-        ''' 
-        SELECT a.msisdn, a.imsi, a.log_dt AS op2_log_dt, b.log_dt AS op3_log_dt, a.mcc, a.mnc
-        FROM 
-            roam352_report_digi.data_em a
-            JOIN roam352_report_digi.data_em b 
-                ON a.msisdn  = b.msisdn
-                AND a.par_year  = b.par_year
-                AND a.par_month = b.par_month
-                AND a.par_date  = b.par_date
-        WHERE 
-            a.par_year  = 2024
-            AND a.par_month = 6
-            AND a.par_date  = 5
-            AND a.op_code = 2
-            AND b.op_code = 3
-            AND a.msisdn != 0;
-        '''
-    )
-    
-    # 2. Per-hour roaming tx share vs total, with running cumulative and rank
+    # JOIN statement  
+    # 1. Per-hour roaming tx share vs total, with running cumulative and rank
     querylist.add(
         ''' 
         SELECT
@@ -173,10 +111,10 @@ def get_queries():
                     a.mcc,
                     COUNT(*) AS total_tx,
                     SUM(CASE WHEN a.mcc != b.home_mcc THEN 1 ELSE 0 END) AS roaming_tx
-            FROM your_table a
+            FROM roam352_report_digi.data_em a
             JOIN (
                 SELECT DISTINCT msisdn, mcc_ref AS home_mcc
-                FROM your_table
+                FROM roam352_report_digi.data_em
                 WHERE par_year = 2024 AND par_month = 6
                 AND msisdn != 0
             ) b ON a.msisdn = b.msisdn
