@@ -11,16 +11,185 @@ class QueryList:
     
 def get_queries():
     querylist = QueryList()
+     
+    # WHERE statement
+    # 1. Simple filter on partition columns
+    querylist.add(
+        ''' 
+        SELECT 
+            trans_iid, msisdn, imsi, op_code, status, log_dt
+        FROM 
+            roam352_report_digi.data_em
+        WHERE 
+            par_year = 2024 AND par_month = 6 AND par_date = 5 AND bound_type = 0
+        LIMIT 
+            1000;
+        '''
+    )
     
-    # Query 1: SELECT statement
-    querylist.add('SELECT * FROM roam352_report_digi.data_em LIMIT 10000')
+    # 2. Multi-condition filter with non-partition columns
+    querylist.add(
+        ''' 
+        SELECT 
+            msisdn, imsi, mcc, mnc, rat_type, status
+        FROM 
+            roam352_report_digi.data_em
+        WHERE 
+            par_year = 2024
+            AND par_month = 6
+            AND op_code IN (2, 3)
+            AND status = 'SUCCESS'
+            AND msisdn != 0
+            AND mcc BETWEEN 500 AND 520;
+        '''
+    )
     
-    # Query 2: WHERE statement
     
-    # Query 3: GROUP BY statement
+    # GROUP BY statement
+    # 1. Roaming traffic volume by operator
+    querylist.add(
+        '''
+        SELECT 
+            mcc, mnc, op_code, COUNT(*) AS total_tx, COUNT(DISTINCT imsi) AS unique_subs
+        FROM 
+            roam352_report_digi.data_em
+        WHERE 
+            par_year = 2024
+            AND par_month = 6
+        GROUP BY 
+            mcc, mnc, op_code
+        ORDER BY 
+            total_tx DESC;
+        '''
+    )
     
-    # Query 4: WINDOW clause
+    # 2. Hourly traffic Breakdown
+    querylist.add(
+        '''
+        SELECT 
+            tx_date, tx_hour, status, COUNT(*) AS tx_count, COUNT(DISTINCT msisdn) AS unique_msisdn
+        FROM 
+            roam352_report_digi.data_em
+        WHERE 
+            par_year = 2024
+            AND par_month = 6
+            AND par_date = 5
+        GROUP BY 
+            tx_date, tx_hour, status
+        ORDER BY 
+            tx_date, tx_hour;
+        '''
+    )
     
-    # Query 5: JOIN statement
+    # WINDOW clause
+    # 1. Rank subscribers by transaction count per operator
+    querylist.add(
+        '''
+        SELECT 
+            msisdn, mcc, mnc, tx_count, RANK() OVER (PARTITION BY mcc, mnc ORDER BY tx_count DESC) AS rnk
+        FROM (
+            SELECT 
+                msisdn, mcc, mnc, COUNT(*) AS tx_count
+            FROM 
+                roam352_report_digi.data_em
+            WHERE 
+                par_year = 2024
+                AND par_month = 6
+                AND msisdn != 0
+            GROUP BY 
+                msisdn, mcc, mnc
+        ) t;
+        '''
+    )
+    
+    # 2. Running total of transactions per hour within a day
+    querylist.add(
+        '''
+        SELECT tx_date, tx_hour, tx_count,
+            SUM(tx_count) OVER (
+                PARTITION BY tx_date
+                ORDER BY tx_hour
+                ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+            ) AS running_total
+        FROM (
+            SELECT 
+                tx_date, tx_hour, COUNT(*) AS tx_count
+            FROM 
+                roam352_report_digi.data_em
+            WHERE 
+                par_year = 2024
+                AND par_month = 6
+                AND par_date = 5
+            GROUP BY 
+                tx_date, tx_hour
+        ) t
+        ORDER BY 
+            tx_date, tx_hour;
+        '''
+    )
+    
+    # JOIN statement
+    # 1. Find subscribers with both op_code 2 and 3 on the same day
+    querylist.add(
+        ''' 
+        SELECT a.msisdn, a.imsi, a.log_dt AS op2_log_dt, b.log_dt AS op3_log_dt, a.mcc, a.mnc
+        FROM 
+            roam352_report_digi.data_em a
+            JOIN roam352_report_digi.data_em b 
+                ON a.msisdn  = b.msisdn
+                AND a.par_year  = b.par_year
+                AND a.par_month = b.par_month
+                AND a.par_date  = b.par_date
+        WHERE 
+            a.par_year  = 2024
+            AND a.par_month = 6
+            AND a.par_date  = 5
+            AND a.op_code = 2
+            AND b.op_code = 3
+            AND a.msisdn != 0;
+        '''
+    )
+    
+    # 2. Per-hour roaming tx share vs total, with running cumulative and rank
+    querylist.add(
+        ''' 
+        SELECT
+            hour_stats.tx_hour,
+            hour_stats.mcc,
+            hour_stats.roaming_tx,
+            hour_stats.total_tx,
+            ROUND(100.0 * hour_stats.roaming_tx / NULLIF(hour_stats.total_tx, 0), 2) AS roaming_pct,
+            SUM(hour_stats.roaming_tx) OVER (
+                PARTITION BY hour_stats.mcc
+                ORDER BY hour_stats.tx_hour
+                ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+            ) AS cumulative_roaming,
+            RANK() OVER (
+                PARTITION BY hour_stats.tx_hour
+                ORDER BY hour_stats.roaming_tx DESC
+            ) AS roaming_rank_per_hour
+        FROM (
+            SELECT a.tx_hour,
+                    a.mcc,
+                    COUNT(*) AS total_tx,
+                    SUM(CASE WHEN a.mcc != b.home_mcc THEN 1 ELSE 0 END) AS roaming_tx
+            FROM your_table a
+            JOIN (
+                SELECT DISTINCT msisdn, mcc_ref AS home_mcc
+                FROM your_table
+                WHERE par_year = 2024 AND par_month = 6
+                AND msisdn != 0
+            ) b ON a.msisdn = b.msisdn
+            WHERE a.par_year  = 2024
+                AND a.par_month = 6
+                AND a.par_date  = 5
+                AND a.msisdn   != 0
+                AND a.status    = 'SUCCESS'
+            GROUP BY a.tx_hour, a.mcc
+        ) hour_stats
+        ORDER BY hour_stats.mcc, hour_stats.tx_hour;
+        '''
+    )
+    
     
     return querylist.queries

@@ -2,6 +2,7 @@ import pandas as pd
 
 from tqdm import tqdm
 from time import perf_counter
+from datetime import datetime
 from impala.dbapi import connect
 
 
@@ -52,5 +53,10 @@ class TestPerformance:
             
             return impala_version, pd.DataFrame(all_query_performance)
             
-        except Exception as e:
-            print(f'An error occurred: {e}')
+        except Exception as e: 
+            raise(e)
+        
+    
+    def save_result(self, impala_version: str, result: pd.DataFrame):
+        return result.T.to_csv(f'apache_{impala_version}_performance_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv')
+        

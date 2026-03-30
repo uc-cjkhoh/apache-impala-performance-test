@@ -1,7 +1,5 @@
-import argparse
-import pandas as pd
-
-from datetime import datetime
+import argparse 
+ 
 from src.test_query import get_queries
 from src.test_performance import TestPerformance
 from src.compare_performance import ComparePerformance
@@ -15,21 +13,15 @@ def main(args):
             iteration=args.iteration,
             queries=get_queries()
         )
-        
-        # pd.DataFrame 
-        impala_version, result = tester.get_performance()
-        
-        # save result
-        result.T.to_csv(f'apache_{impala_version}_performance_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv')
-        
+         
+        impala_version, result = tester.get_performance() 
+        tester.save_result(impala_version, result)
         
     elif args.mode == 'compare':
         comparison = ComparePerformance()
         
         # result = comparison.get_comparison()
-        
-        # save result
-        # result.to_csv('')
+        # comparison.save_result(result)
 
 
 if __name__ == '__main__':

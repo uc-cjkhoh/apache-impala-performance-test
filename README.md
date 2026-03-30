@@ -28,11 +28,16 @@ requirements.txt
 ### Installation Guide
 Clone this repo
 ```bash
-git clone <this-repo-url>
+git clone <repo-url>
 
 cd <repo_name>
 
 pip install -r requirements.txt
+```
+
+Insert queries in file `src/test_query.py`
+```
+Eg. querylist.add("ANY QUERY")
 ```
 
 For performance testing:
