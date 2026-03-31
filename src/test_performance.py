@@ -25,6 +25,11 @@ class TestPerformance:
             cursor.execute('SELECT VERSION()')
             impala_version = cursor.fetchall()[0][0].split('-')[0].replace(' ', '_')
             
+            # sql validation
+            for query in self.queries:
+                cursor.execute(f'EXPLAIN {query}')
+            
+            # actual performance test
             for (mt_dop, query) in tqdm(zip(self.mt_dops, self.queries)):
                 query_performance = []
                 
