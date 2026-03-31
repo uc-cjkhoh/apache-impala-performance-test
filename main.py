@@ -7,15 +7,18 @@ from src.compare_performance import ComparePerformance
 
 def main(args):
     if args.mode == 'test': 
-        tester = TestPerformance(
-            host=args.host, 
-            port=args.port, 
-            iteration=args.iteration,
-            queries=get_queries()
-        )
-         
-        impala_version, result = tester.get_performance() 
-        tester.save_result(impala_version, result)
+        for query_list in get_queries():
+            tester = TestPerformance(
+                host=args.host, 
+                port=args.port, 
+                iteration=args.iteration,
+                queries=query_list.queries,
+                mt_dops=query_list.mt_dop
+            )
+            
+            impala_version, result = tester.get_performance() 
+            tester.save_result(impala_version, result)
+        
         
     elif args.mode == 'compare':
         comparison = ComparePerformance()

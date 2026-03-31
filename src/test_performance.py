@@ -7,11 +7,12 @@ from impala.dbapi import connect
 
 
 class TestPerformance:
-    def __init__(self, host: str, port: int, iteration: int, queries: list[str]):
+    def __init__(self, host: str, port: int, iteration: int, queries: list[str], mt_dops: list[int]):
         self.host = host
         self.port = port
         self.iteration = iteration
         self.queries = queries
+        self.mt_dops = mt_dops
         
     
     def get_performance(self): 
@@ -24,8 +25,10 @@ class TestPerformance:
             cursor.execute('SELECT VERSION()')
             impala_version = cursor.fetchall()[0][0].split('-')[0].replace(' ', '_')
             
-            for query in tqdm(self.queries):
+            for (mt_dop, query) in tqdm(zip(self.mt_dops, self.queries)):
                 query_performance = []
+                
+                cursor.execute(f"SET MT_DOP={mt_dop}")
                 
                 # Single execution warm-up
                 cursor.execute(query)
@@ -54,7 +57,6 @@ class TestPerformance:
             return impala_version, pd.DataFrame(all_query_performance)
             
         except Exception as e:
-            self.save_result(impala_version, all_query_performance)
             raise
          
     
