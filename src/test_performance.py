@@ -2,7 +2,6 @@ import pandas as pd
 
 from tqdm import tqdm
 from time import perf_counter
-from datetime import datetime
 from impala.dbapi import connect
 
 
@@ -35,7 +34,7 @@ class TestPerformance:
                 
                 cursor.execute(f"SET MT_DOP={mt_dop}")
                 
-                # Single execution warm-up
+                # single execution warm-up
                 cursor.execute(query)
                 
                 for i in tqdm(range(self.iteration)):
@@ -57,7 +56,7 @@ class TestPerformance:
                     # save run time
                     query_performance.append(run_time)
                     
-                all_query_performance[query.strip()] = query_performance
+                all_query_performance[f'MT_DOP={mt_dop};\n{query.strip()}'] = query_performance
             
             return impala_version, pd.DataFrame(all_query_performance)
             
@@ -66,5 +65,8 @@ class TestPerformance:
          
     
     def save_result(self, impala_version: str, result: pd.DataFrame):
-        return result.to_csv(f'apache_{impala_version}_performance_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv')
+        return result.to_csv(
+            f'test_result/apache_{impala_version}_performance.csv', 
+            index=False
+        )
         

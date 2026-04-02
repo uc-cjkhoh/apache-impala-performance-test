@@ -9,120 +9,12 @@ class QueryList:
     def add(self, query: str, mt_dop: int = 0):
         self.queries.append(query)
         self.mt_dop.append(mt_dop)
-            
-    
-def sql_general_test(ql: QueryList):
-    # test where, group by, window, join statements
+          
 
-    # WHERE statement
-    # 1. Simple filter on partition columns
-    query1 = ''' 
-        SELECT 
-            trans_iid, msisdn, imsi, op_code, status, log_dt
-        FROM 
-            roam352_report_digi.data_em
-        WHERE 
-            par_year = 2024 AND par_month = 202405 AND par_date = 20240521
-        LIMIT 
-            10000;
-    '''
-    
-    # 2. Multi-condition filter with non-partition columns
-    query2 = ''' 
-        SELECT 
-            msisdn, imsi, mcc, mnc, rat_type, status
-        FROM 
-            roam352_report_digi.data_em
-        WHERE 
-            par_year = 2024
-            AND par_month = 202406
-            AND par_date = 20240602
-            AND op_code IN (2, 23, 316) 
-            AND msisdn != 0
-            AND mcc BETWEEN 500 AND 520
-        LIMIT 10000;
-    '''
-    
-    # GROUP BY statement
-    # 1. Roaming traffic volume by operator
-    query3 = '''
-        SELECT 
-            mcc, mnc, op_code, COUNT(*) AS total_tx, COUNT(DISTINCT imsi) AS unique_subs
-        FROM 
-            roam352_report_digi.data_em
-        WHERE 
-            par_year = 2024
-            AND par_month = 202406 
-            AND par_date between 20240601 and 20240615
-        GROUP BY 
-            mcc, mnc, op_code 
-    '''
-    
-    # WINDOW clause 
-    # 1. Running total of transactions per hour within a day
-    query4 = '''
-        SELECT tx_date, tx_hour, tx_count,
-            SUM(tx_count) OVER (
-                PARTITION BY tx_date
-                ORDER BY tx_hour
-                ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
-            ) AS running_total
-        FROM (
-            SELECT 
-                tx_date, tx_hour, COUNT(*) AS tx_count
-            FROM 
-                roam352_report_digi.data_em
-            WHERE 
-                par_year = 2024
-                AND par_month = 202406
-                AND par_date between 20240601 and 20240615 
-            GROUP BY 
-                tx_date, tx_hour
-        ) t 
-    '''
-    
-    # JOIN statement  
-    # 1. Per-hour roaming tx share vs total, with running cumulative and rank
-    query5 = ''' 
-        SELECT
-            hour_stats.tx_hour,
-            hour_stats.mcc,
-            hour_stats.roaming_tx,
-            hour_stats.total_tx,
-            ROUND(100.0 * hour_stats.roaming_tx / NULLIF(hour_stats.total_tx, 0), 2) AS roaming_pct,
-            SUM(hour_stats.roaming_tx) OVER (
-                PARTITION BY hour_stats.mcc
-                ORDER BY hour_stats.tx_hour
-                ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
-            ) AS cumulative_roaming,
-            RANK() OVER (
-                PARTITION BY hour_stats.tx_hour
-                ORDER BY hour_stats.roaming_tx DESC
-            ) AS roaming_rank_per_hour
-        FROM (
-            SELECT a.tx_hour,
-                    a.mcc,
-                    COUNT(*) AS total_tx,
-                    SUM(CASE WHEN a.mcc != b.home_mcc THEN 1 ELSE 0 END) AS roaming_tx
-            FROM roam352_report_digi.data_em a
-            JOIN (
-                SELECT DISTINCT msisdn, mcc_ref AS home_mcc
-                FROM roam352_report_digi.data_em
-                WHERE par_year = 2024 AND par_month = 202406 AND par_date BETWEEN 20240601 and 20240615
-                AND msisdn != 0
-            ) b ON a.msisdn = b.msisdn
-            WHERE a.par_year  = 2024
-                AND a.par_month = 202406
-                AND a.par_date BETWEEN 20240601 AND 20240615  
-            GROUP BY a.tx_hour, a.mcc
-        ) hour_stats 
-    '''
-    
-    return [query1, query2, query3, query4, query5]
-
-
-def sql_improvement_4_4_0(ql: QueryList):
+def sql_improvement(ql: QueryList):
+    # --------------------------------------------------------------------------
     # IMPALA 4.4.0 Improvement
+    # --------------------------------------------------------------------------
      
     # 1. [4.4.0 | IMPALA-11123] COUNT(*) Footer Optimization for ORC
     # -- Test 1a: Simple COUNT(*) — should use ORC footer metadata only
@@ -295,12 +187,12 @@ def sql_improvement_4_4_0(ql: QueryList):
         ORDER BY total_tx DESC;
         '''
     )
-    
-    return ql
      
-    
-def sql_improvement_4_5_0(ql: QueryList):
+     
+     
+    # -----------------------------------------------------------------------
     # IMPALA IMPROVEMENT 4.5.0
+    # -----------------------------------------------------------------------
     
     # 1. [4.5.0 | IMPALA-889] ANSI SQL TRIM() Function Support
     # -- Test 5a: TRIM LEADING zeros from trans_iid (hex transaction ID)
@@ -669,8 +561,7 @@ def sql_improvement_4_5_0(ql: QueryList):
     # 7. [4.5.0 | IMPALA-13509] Avoid Duplicate DeepCopy in KrpcDataStreamSender
     # -- Test 11a: High-cardinality distributed GROUP BY — triggers large shuffle
     ql.add(
-        '''
-        SET MT_DOP=4;
+        ''' 
         SELECT msisdn,
             imsi,
             COUNT(*)                AS total_tx,
@@ -686,15 +577,14 @@ def sql_improvement_4_5_0(ql: QueryList):
             AND msisdn   != 0
         GROUP BY msisdn, imsi
         ORDER BY total_tx DESC
-        LIMIT 500;
-        SET MT_DOP=0;
-        '''
+        LIMIT 500; 
+        ''',
+        mt_dop=4
     )
     
     # -- Test 11b: Large distributed join — forces hash-partition exchange on both sides
     ql.add(
-        '''
-        SET MT_DOP=4;
+        '''  
         SELECT a.msisdn,
             a.mcc,
             a.vlr,
@@ -720,15 +610,15 @@ def sql_improvement_4_5_0(ql: QueryList):
             AND a.msisdn != 0
             AND b.msisdn != 0
         GROUP BY a.msisdn, a.mcc, a.vlr, b.op_code 
-        LIMIT 200;
-        SET MT_DOP=0;
-        '''
+        LIMIT 200; 
+        ''',
+        mt_dop=4
     )
     
+    return ql
      
     
-def get_queries(): 
-    q1 = QueryList()
-    q2 = QueryList()
+def get_queries():  
+    ql = QueryList()
      
-    return [sql_improvement_4_4_0(q1), sql_improvement_4_5_0(q2)]
+    return [sql_improvement(ql)]
