@@ -1,6 +1,5 @@
 import os
-import argparse 
-import pandas as pd
+import argparse
 
 from src.test_query import get_queries
 from src.test_performance import TestPerformance
