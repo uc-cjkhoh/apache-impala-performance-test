@@ -1,9 +1,11 @@
+import os
 import argparse 
 import pandas as pd
 
 from src.test_query import get_queries
 from src.test_performance import TestPerformance
 from src.compare_performance import ComparePerformance
+from src.plot_charts import PerformanceReport
 
 
 def main(args):
@@ -21,17 +23,20 @@ def main(args):
             tester.save_result(impala_version, result)
         
     elif args.mode == 'compare':
-        report_dirs = 'test_result/'
-        cp = ComparePerformance(report_dirs)
+        data_folder = os.path.abspath('test_result/')
+        cp = ComparePerformance(data_folder)
+    
+        result, raw_data_a, raw_data_b, sample_a_name, sample_b_name = cp.perform_paired_ttest()
         
-        metrics_to_compare = []
-        for file in cp.files:
-            perf_history = pd.DataFrame(file)
-            metrics = cp.get_metrics(perf_history)
-            metrics_to_compare.append(metrics)
+        # Generate comprehensive report
+        report_gen = PerformanceReport(result, raw_data_a, raw_data_b, sample_a_name, sample_b_name)
+        report_gen.generate_pdf_report(output_file='performance_comparison_report.pdf')
+        print("Performance comparison report generated: performance_comparison_report.pdf")
+        print("\nReport Summary:")
+        print(f"- Total queries: {len(result)}")
+        print(f"- Significant differences: {result['is_reject_H0'].sum()}")
+        print(f"- No significant differences: {len(result) - result['is_reject_H0'].sum()}")
         
-        comparison_report = cp.get_comparison(metrics_to_compare)
-
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

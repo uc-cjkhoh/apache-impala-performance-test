@@ -1,3 +1,5 @@
 impyla
 pandas
 tqdm
+matplotlib
+reportlab

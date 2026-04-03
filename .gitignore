@@ -1,4 +1,7 @@
 .venv/
 .vscode/
+launch.json
+test_result/
 */__pycache__/
 *.csv
+*.pdf

@@ -10,7 +10,7 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
-            "args": ["--mode", "test"]
+            "args": ["--mode", "compare"]
         }
     ]
 }
