@@ -108,12 +108,7 @@ This will:
 1. Load CSV files from `test_result/`
 2. Perform statistical analysis
 3. Generate `performance_comparison_report.pdf` with comprehensive analysis
-
-### Direct PDF Generation
-```bash
-# Generate PDF from existing results
-python src/plot_charts.py --data-folder test_result --output custom_report.pdf
-```
+ 
 
 ## Output Files
 
