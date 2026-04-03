@@ -150,11 +150,4 @@ Results include:
 - Use appropriate MT_DOP settings for your cluster
 - Monitor cluster resources during testing
 - Consider query complexity and data volume
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Add tests for new functionality
-4. Submit a pull request
-
+ 
