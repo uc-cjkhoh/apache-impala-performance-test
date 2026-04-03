@@ -12,8 +12,6 @@ Key features:
 
 ## Repository Structure
 ```
-impala_4_3_0_config.txt          # Configuration file for Impala 4.3.0
-impala_4_5_0_config.txt          # Configuration file for Impala 4.5.0
 main.py                          # Main entry point script
 README.md                        # This file
 requirements.txt                 # Python dependencies
@@ -22,11 +20,8 @@ src/
     compare_performance.py       # Statistical comparison logic
     plot_charts.py               # PDF report generation with charts
     test_performance.py          # Query execution and timing
-    test_query.py                # Query definitions and configurations
-    __pycache__/                 # Python cache files
+    test_query.py                # Query definitions and configurations 
 test_result/
-    apache_impalad_version_4.3.0_performance.csv  # Performance results for version 4.3.0
-    apache_impalad_version_4.5.0_performance.csv  # Performance results for version 4.5.0
 ```
 
 ## How It Works
