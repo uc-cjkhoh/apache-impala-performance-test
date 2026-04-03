@@ -1,89 +1,170 @@
 # Apache Impala Performance Test and Comparison
 
 ## Overview
-This repository provides a lightweight framework to run Apache Impala query performance tests and compare saved results.
+This repository provides a comprehensive framework for running Apache Impala query performance tests, comparing results between different versions, and generating detailed PDF reports with visual charts.
 
-It supports:
-- executing query workloads against an Impala cluster,
-- measuring query runtime across multiple iterations,
-- saving results as CSV reports under `test_result/`, and
-- loading report CSVs to derive comparison metrics.
+Key features:
+- Execute query workloads against an Impala cluster with configurable iterations
+- Measure and record query execution times
+- Perform statistical A/B testing comparison between two Impala versions
+- Generate professional PDF reports with box plots, summary charts, and detailed performance statistics
+- Support for dynamic version labeling and flexible query sets
 
 ## Repository Structure
 ```
-main.py
-requirements.txt
+impala_4_3_0_config.txt          # Configuration file for Impala 4.3.0
+impala_4_5_0_config.txt          # Configuration file for Impala 4.5.0
+main.py                          # Main entry point script
+README.md                        # This file
+requirements.txt                 # Python dependencies
 src/
     __init__.py
-    test_query.py
-    test_performance.py
-    compare_performance.py
+    compare_performance.py       # Statistical comparison logic
+    plot_charts.py               # PDF report generation with charts
+    test_performance.py          # Query execution and timing
+    test_query.py                # Query definitions and configurations
+    __pycache__/                 # Python cache files
 test_result/
-    apache_impalad_version_4.3.0_performance.csv
-    apache_impalad_version_4.5.0_performance.csv
+    apache_impalad_version_4.3.0_performance.csv  # Performance results for version 4.3.0
+    apache_impalad_version_4.5.0_performance.csv  # Performance results for version 4.5.0
 ```
 
-## How it Works
-- `main.py` is the entrypoint and supports two modes: `test` and `compare`.
-- `--mode test` loads query definitions from `src/test_query.py` and runs each SQL query repeatedly.
-- `src/test_performance.py` connects to Impala, validates SQL via `EXPLAIN`, runs a warm-up execution, then times the configured iterations.
-- Results are written to CSV files under `test_result/` in the format `apache_<IMPALA_VERSION>_performance.csv`.
-- `--mode compare` loads report files from `test_result/` and computes summary metrics for each loaded file.
+## How It Works
+
+### Test Mode (`--mode test`)
+- Loads query definitions from `src/test_query.py`
+- Connects to the specified Impala cluster
+- Executes each query multiple times (configurable iterations)
+- Records execution times and saves results to CSV files in `test_result/`
+- Supports different MT_DOP (multi-threading degree of parallelism) settings
+
+### Compare Mode (`--mode compare`)
+- Loads performance CSV files from `test_result/`
+- Performs paired t-test statistical analysis on query execution times
+- Generates comprehensive PDF report with:
+  - Summary statistics and charts
+  - Individual query analysis with box plots
+  - Performance metrics (mean, median, std, min, max)
+  - Statistical significance testing
+  - Detailed explanations and recommendations
+
+### PDF Report Features
+- **Visual Charts**: Box plots for each query, summary bar charts, and pie charts
+- **Statistical Analysis**: t-values, p-values, significance testing
+- **Performance Metrics**: Detailed execution time statistics for each sample
+- **Dynamic Content**: Automatically adapts to different version names and query sets
+- **Professional Layout**: Tables, headings, and structured analysis
 
 ## Prerequisites
 - Python 3.9 or newer
-- Access to an Impala cluster
-- Network connectivity from the test machine to the Impala host
+- Access to an Apache Impala cluster
+- Network connectivity to the Impala host
+- Required Python packages (installed via `requirements.txt`)
 
 ## Installation
 ```bash
-git clone <repo-url>
-cd <repo_name>
+git clone <repository-url>
+cd impala_performance_test
 pip install -r requirements.txt
 ```
 
 ## Configuration
-### Add or modify test queries
-Open `src/test_query.py` and edit the `sql_improvement()` function or add additional query set functions.
-The repository uses the `QueryList` dataclass:
-```python
-ql.add("SELECT ...", mt_dop=4)
-```
-If `mt_dop` is omitted, it defaults to `0`.
 
-### Available CLI arguments
-- `--mode`: `test` or `compare`
-- `--iteration`: number of timing iterations per query (default `10`)
-- `--host`: Impala host address (default `10.168.49.12`)
-- `--port`: Impala port (default `21050`)
+### Impala Connection
+Update the connection parameters in `main.py` or pass them as command-line arguments:
+- Host: Default `10.168.49.12`
+- Port: Default `21050`
+
+### Test Queries
+Modify `src/test_query.py` to add or change query sets:
+```python
+def get_queries():
+    ql = QueryList()
+    ql.add("SELECT status, COUNT(*) FROM table GROUP BY status;", mt_dop=0)
+    # Add more queries...
+    return [ql]
+```
+
+### Configuration Files
+- `impala_4_3_0_config.txt`: Configuration for Impala 4.3.0
+- `impala_4_5_0_config.txt`: Configuration for Impala 4.5.0
 
 ## Usage
-### Run performance tests
+
+### Running Performance Tests
 ```bash
+# Run tests with default settings (10 iterations)
 python main.py --mode test
+
+# Run tests with custom iterations
+python main.py --mode test --iteration 20
+
+# Run tests with custom connection
+python main.py --mode test --host your-impala-host --port 21050
 ```
 
-### Compare saved performance reports
+### Comparing Results and Generating PDF Report
 ```bash
+# Compare results and generate PDF report
 python main.py --mode compare
 ```
 
-### Example with custom settings
+This will:
+1. Load CSV files from `test_result/`
+2. Perform statistical analysis
+3. Generate `performance_comparison_report.pdf` with comprehensive analysis
+
+### Direct PDF Generation
 ```bash
-python main.py --mode test --host 192.168.1.100 --port 21050 --iteration 20
+# Generate PDF from existing results
+python src/plot_charts.py --data-folder test_result --output custom_report.pdf
 ```
 
-## Output
-- Test runs produce CSV files in `test_result/`.
-- File names follow the pattern `apache_<IMPALA_VERSION>_performance.csv`.
-- Each CSV has one column per query and one row per measurement iteration.
+## Output Files
 
-## Notes
-- `src/test_query.py` currently returns a single query set from `get_queries()`.
-- `src/compare_performance.py` reads CSV files from `test_result/` and computes per-column statistics.
-- Make sure the `test_result/` directory exists and is writable before running tests.
+### CSV Results (`test_result/`)
+- Columns: SQL queries (full text as headers)
+- Rows: Execution times for each iteration
+- Format: `apache_<version>_performance.csv`
 
-## Dependencies
-- `impyla`
-- `pandas`
-- `tqdm`
+### PDF Report
+- Comprehensive analysis with charts
+- Statistical significance testing
+- Performance comparisons
+- Recommendations for version selection
+
+## Statistical Analysis
+
+The comparison uses:
+- **Paired t-test**: Compares means of execution times between versions
+- **Significance level**: α = 0.05
+- **Null hypothesis**: No performance difference between versions
+- **Alternative hypothesis**: Significant performance difference exists
+
+Results include:
+- t-statistic and p-value for each query
+- Rejection of null hypothesis decision
+- Performance improvement direction
+- Confidence intervals and effect sizes
+
+## Troubleshooting
+
+### Common Issues
+- **Connection errors**: Verify Impala host/port accessibility
+- **Query failures**: Check SQL syntax and table permissions
+- **Missing dependencies**: Run `pip install -r requirements.txt`
+- **File not found**: Ensure CSV files exist in `test_result/` for comparison
+
+### Performance Considerations
+- Increase iterations for more reliable statistics
+- Use appropriate MT_DOP settings for your cluster
+- Monitor cluster resources during testing
+- Consider query complexity and data volume
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Add tests for new functionality
+4. Submit a pull request
+
