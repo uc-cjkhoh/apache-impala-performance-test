@@ -4,4 +4,4 @@ launch.json
 test_result/
 */__pycache__/
 *.csv
-*.pdf
+last_update
