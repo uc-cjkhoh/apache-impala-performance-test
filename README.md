@@ -13,7 +13,7 @@ Key features:
 ## Repository Structure
 ```
 main.py                          # Main entry point script
-README.md                        # This file
+README.md                        
 requirements.txt                 # Python dependencies
 src/
     __init__.py
