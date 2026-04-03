@@ -25,17 +25,10 @@ def main(args):
     elif args.mode == 'compare':
         data_folder = os.path.abspath('test_result/')
         cp = ComparePerformance(data_folder)
-    
         result, raw_data_a, raw_data_b, sample_a_name, sample_b_name = cp.perform_paired_ttest()
-        
-        # Generate comprehensive report
+         
         report_gen = PerformanceReport(result, raw_data_a, raw_data_b, sample_a_name, sample_b_name)
         report_gen.generate_pdf_report(output_file='performance_comparison_report.pdf')
-        print("Performance comparison report generated: performance_comparison_report.pdf")
-        print("\nReport Summary:")
-        print(f"- Total queries: {len(result)}")
-        print(f"- Significant differences: {result['is_reject_H0'].sum()}")
-        print(f"- No significant differences: {len(result) - result['is_reject_H0'].sum()}")
         
 
 if __name__ == '__main__':
