@@ -26,7 +26,7 @@ def sql_improvement(ql: QueryList):
             roam352_report_digi.data_em
         WHERE 
             par_year = 2024
-            AND par_month = 202406;
+            AND par_month = 202401;
         '''
     )
     
@@ -39,7 +39,7 @@ def sql_improvement(ql: QueryList):
             roam352_report_digi.data_em
         WHERE 
             par_year = 2024
-            AND par_month = 202406
+            AND par_month = 202401
         GROUP BY 
             status;
         '''
@@ -73,7 +73,7 @@ def sql_improvement(ql: QueryList):
             roam352_report_digi.data_em
         WHERE 
             par_year = 2024
-            AND par_month = 202406;
+            AND par_month = 202401;
         '''
     )
     
@@ -86,7 +86,7 @@ def sql_improvement(ql: QueryList):
             roam352_report_digi.data_em
         WHERE 
             par_year = 2024
-            AND par_month = 202406;
+            AND par_month = 202401;
         ''',
         mt_dop=4
     )
@@ -100,8 +100,8 @@ def sql_improvement(ql: QueryList):
             roam352_report_digi.data_em
         WHERE 
             par_year  = 2024
-            AND par_month = 202406
-            AND par_date BETWEEN 20240601 AND 20240615;
+            AND par_month = 202401
+            AND par_date = 20240101;
         ''',
         mt_dop=4
     )
@@ -123,13 +123,13 @@ def sql_improvement(ql: QueryList):
             SELECT DISTINCT msisdn
             FROM roam352_report_digi.data_em
             WHERE par_year  = 2024
-            AND par_month = 202406
-            AND par_date BETWEEN 20240601 AND 20240615
+            AND par_month = 202401
+            AND par_date = 20240101
             AND op_code   = 3
             AND mcc != mcc_ref
         ) b ON a.msisdn = b.msisdn
         WHERE a.par_year  = 2024
-        AND a.par_month = 202406
+        AND a.par_month = 202401
         GROUP BY a.msisdn, a.mcc, a.mnc
         ORDER BY total_tx DESC
         LIMIT 100;
@@ -149,13 +149,13 @@ def sql_improvement(ql: QueryList):
             SELECT DISTINCT mcc, op_code
             FROM roam352_report_digi.data_em
             WHERE par_year  = 2024
-            AND par_month = 202406 
-            AND par_date = 20240601 
+            AND par_month = 202401 
+            AND par_date = 20240101 
             AND mcc BETWEEN 500 AND 530
         ) b ON a.mcc = b.mcc AND a.op_code = b.op_code
         WHERE a.par_year  = 2024
-        AND a.par_month = 202406
-        AND a.par_date = 20240601
+        AND a.par_month = 202401
+        AND a.par_date = 20240101
         GROUP BY a.tx_hour, a.mcc, a.op_code
         ORDER BY a.tx_hour, a.mcc;
         ''' 
@@ -176,13 +176,13 @@ def sql_improvement(ql: QueryList):
             SELECT DISTINCT msisdn, subs_type, rate_plan
             FROM roam352_report_digi.data_em
             WHERE par_year  = 2024
-            AND par_month = 202406
-            AND par_date = 20240601
+            AND par_month = 202401
+            AND par_date = 20240101
             AND subs_type IS NOT NULL
         ) sub ON t.msisdn = sub.msisdn
         WHERE t.par_year  = 2024
-        AND t.par_month = 202406
-        AND t.par_date = 20240601
+        AND t.par_month = 202401
+        AND t.par_date = 20240101
         GROUP BY sub.subs_type, sub.rate_plan
         ORDER BY total_tx DESC;
         '''
@@ -204,8 +204,8 @@ def sql_improvement(ql: QueryList):
     #         roam352_report_digi.data_em
     #     WHERE 
     #         par_year  = 2024
-    #         AND par_month = 202406
-    #         AND par_date BETWEEN 20240601 AND 20240615
+    #         AND par_month = 202401
+    #         AND par_date BETWEEN 20240101 AND 20240115
     #     LIMIT 20;
     #     '''
     # )
@@ -223,7 +223,7 @@ def sql_improvement(ql: QueryList):
     #         roam352_report_digi.data_em
     #     WHERE 
     #         par_year  = 2024
-    #         AND par_month = 202406
+    #         AND par_month = 202401
     #         AND rate_plan IS NOT NULL
     #     LIMIT 20;
     #     '''
@@ -238,7 +238,7 @@ def sql_improvement(ql: QueryList):
     #         roam352_report_digi.data_em
     #     WHERE 
     #         par_year  = 2024
-    #         AND par_month = 202406
+    #         AND par_month = 202401
     #         AND TRIM(BOTH ' ' FROM subs_type) = 'PREPAID';
     #     '''
     # )
@@ -255,7 +255,7 @@ def sql_improvement(ql: QueryList):
     #         roam352_report_digi.data_em
     #     WHERE 
     #         par_year  = 2024
-    #         AND par_month = 202406
+    #         AND par_month = 202401
     #         AND subs_type IS NOT NULL
     #     GROUP BY 
     #         TRIM(BOTH ' ' FROM subs_type),
@@ -276,7 +276,7 @@ def sql_improvement(ql: QueryList):
             roam352_report_digi.data_em
         WHERE 
             par_year = 2024
-            AND par_month = 202406
+            AND par_month = 202401
         GROUP BY 
             status;
         '''
@@ -294,8 +294,8 @@ def sql_improvement(ql: QueryList):
             roam352_report_digi.data_em
         WHERE 
             par_year = 2024
-            AND par_month = 202406
-            AND par_date BETWEEN 20240601 AND 20240610
+            AND par_month = 202401
+            AND par_date = 20240101
         GROUP BY 
             op_code, bound_type, status
         ORDER BY 
@@ -315,7 +315,7 @@ def sql_improvement(ql: QueryList):
             roam352_report_digi.data_em
         WHERE 
             par_year = 2024
-            AND par_month = 202406 
+            AND par_month = 202401 
         GROUP BY 
             tx_month, tx_week, op_code, status
         ORDER BY 
@@ -331,7 +331,7 @@ def sql_improvement(ql: QueryList):
         SELECT tx_hour, op_code, COUNT(*) AS tx_count
         FROM roam352_report_digi.data_em
         WHERE par_year  = 2024
-        AND par_month = 202406
+        AND par_month = 202401
         AND tx_hour BETWEEN 8 AND 10   -- narrow: ~12.5% of hours
         GROUP BY tx_hour, op_code
         ORDER BY tx_hour;
@@ -351,11 +351,10 @@ def sql_improvement(ql: QueryList):
             SELECT DISTINCT msisdn
             FROM roam352_report_digi.data_em
             WHERE par_year   = 2024
-            AND par_month  = 202406
-            AND module_dt BETWEEN 1717545900000 AND 1717545960000  -- 1-minute window
+            AND par_month  = 202401
         ) narrow ON a.msisdn = narrow.msisdn
         WHERE a.par_year  = 2024
-        AND a.par_month = 202406
+        AND a.par_month = 202401
         GROUP BY a.msisdn, a.mcc, a.op_code
         ORDER BY tx_count DESC
         LIMIT 50;
@@ -395,8 +394,8 @@ def sql_improvement(ql: QueryList):
                                             op_code, status, bound_type, vlr
                                         FROM roam352_report_digi.data_em
                                         WHERE par_year  = 2024
-                                        AND par_month = 202406
-                                        AND par_date  = 20240601
+                                        AND par_month = 202401
+                                        AND par_date  = 20240101
                                         AND msisdn   != 0
                                     ) s1
                                     WHERE bound_type IN (0, 1)
@@ -434,8 +433,8 @@ def sql_improvement(ql: QueryList):
                             SELECT *
                             FROM roam352_report_digi.data_em
                             WHERE par_year  = 2024
-                            AND par_month = 202406
-                            AND par_date BETWEEN 20240601 AND 20240615
+                            AND par_month = 202401
+                            AND par_date = 20240101
                         ) base
                         WHERE op_code IN (2, 3) 
                     ) filtered
@@ -460,7 +459,7 @@ def sql_improvement(ql: QueryList):
             roam352_report_digi.data_em
         WHERE 
             par_year  = 2024
-            AND par_month = 202406 
+            AND par_month = 202401 
         GROUP BY 
             mcc, op_code;
         '''
@@ -475,8 +474,8 @@ def sql_improvement(ql: QueryList):
             roam352_report_digi.data_em
         WHERE 
             par_year  = 2024
-            AND par_month = 202406
-            AND par_date BETWEEN 20240601 AND 20240615
+            AND par_month = 202401
+            AND par_date = 20240101
         GROUP BY 
             mcc, op_code;
         '''
@@ -493,8 +492,8 @@ def sql_improvement(ql: QueryList):
             roam352_report_digi.data_em
         WHERE 
             par_year  = 2024
-            AND par_month = 202406 
-            AND par_date BETWEEN 20240601 AND 20240615
+            AND par_month = 202401 
+            AND par_date = 20240101
         GROUP BY 
             mcc, bound_type
         ORDER BY 
@@ -514,7 +513,7 @@ def sql_improvement(ql: QueryList):
             COUNT(DISTINCT msisdn)  AS unique_subs
         FROM roam352_report_digi.data_em
         WHERE par_year  = 2024
-        AND par_month = 202406
+        AND par_month = 202401
         AND op_code   = 2           -- single value predicate → agg cardinality reduced
         GROUP BY op_code, tx_hour
         ORDER BY tx_hour;
@@ -529,7 +528,7 @@ def sql_improvement(ql: QueryList):
             COUNT(DISTINCT mcc)   AS unique_mcc
         FROM roam352_report_digi.data_em
         WHERE par_year  = 2024
-        AND par_month = 202406
+        AND par_month = 202401
         AND bound_type IN (0, 1)   -- subset of all bound_type values
         GROUP BY bound_type, status;
         '''
@@ -548,11 +547,11 @@ def sql_improvement(ql: QueryList):
             SELECT DISTINCT msisdn, mcc_ref
             FROM roam352_report_digi.data_em
             WHERE par_year  = 2024
-            AND par_month = 202406
+            AND par_month = 202401
             AND mcc_ref = 502
         ) home ON visited.msisdn = home.msisdn
         WHERE visited.par_year  = 2024
-        AND visited.par_month = 202406
+        AND visited.par_month = 202401
         GROUP BY visited.mcc, home.mcc_ref;
         '''
     )
@@ -572,8 +571,8 @@ def sql_improvement(ql: QueryList):
         FROM roam352_report_digi.data_em
         WHERE 
             par_year  = 2024
-            AND par_month = 202406
-            AND par_date BETWEEN 20240601 AND 20240615
+            AND par_month = 202401
+            AND par_date = 20240101
             AND msisdn   != 0
         GROUP BY msisdn, imsi
         ORDER BY total_tx DESC
@@ -598,11 +597,11 @@ def sql_improvement(ql: QueryList):
             AND a.op_code != b.op_code
         WHERE 
             a.par_year = 2024
-            AND a.par_month = 202406
-            AND a.par_date = 20240601
+            AND a.par_month = 202401
+            AND a.par_date = 20240101
             AND b.par_year = 2024
-            AND b.par_month = 202406
-            AND b.par_date = 20240601
+            AND b.par_month = 202401
+            AND b.par_date = 20240101
             AND a.op_code IN (23, 316)
             AND b.op_code IN (23, 316)
             AND a.mcc IN (502, 510)

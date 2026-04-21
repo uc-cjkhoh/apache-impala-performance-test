@@ -3,3 +3,4 @@ pandas
 tqdm
 matplotlib
 reportlab
+clickhouse-driver
