@@ -99,12 +99,12 @@ class TestClickHousePerformance:
                 query_performance = []
                 
                 # Single execution warm-up (with cache cleared)
-                # self.clear_query_cache(client)
-                try:
-                    client.execute(query)
-                except Exception as e:
-                    print(f"Error during warm-up: {e}")
-                    raise
+                self.clear_query_cache(client)
+                # try:
+                #     client.execute(query)
+                # except Exception as e:
+                #     print(f"Error during warm-up: {e}")
+                #     raise
                 
                 # Run the query multiple times, measuring each
                 for i in tqdm(range(self.iteration), desc="Iterations", leave=False):
