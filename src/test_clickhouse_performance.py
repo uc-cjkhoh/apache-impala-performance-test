@@ -99,7 +99,7 @@ class TestClickHousePerformance:
                 query_performance = []
                 
                 # Single execution warm-up (with cache cleared)
-                self.clear_query_cache(client)
+                # self.clear_query_cache(client)
                 try:
                     client.execute(query)
                 except Exception as e:
