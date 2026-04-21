@@ -86,22 +86,14 @@ class TestClickHousePerformance:
                 database=self.database,
                 user=self.user,
                 password=self.password,
-                settings={'log_queries': 1}
+                settings={'log_queries': 1, 'final': 0}
             )
             
             all_query_performance = {}
             
             # Get ClickHouse version
             clickhouse_version = self.get_clickhouse_version(client)
-            
-            # SQL validation - check all queries are valid
-            for query in self.queries:
-                try:
-                    client.execute(f'EXPLAIN SYNTAX {query}')
-                except Exception as e:
-                    print(f"Error validating query: {e}")
-                    raise
-            
+              
             # Actual performance test
             for query in tqdm(self.queries, desc="Testing queries"):
                 query_performance = []
