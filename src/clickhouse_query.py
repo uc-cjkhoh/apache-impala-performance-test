@@ -351,7 +351,7 @@ def sql_improvement(ql: ClickHouseQueryList):
     # -- Test 8b: Extended nesting with window + aggregation (8 levels)
     ql.add(
         '''
-        SELECT final.*
+        SELECT f.*
         FROM (
             SELECT msisdn, tx_hour, tx_count, running_total,
                 ROUND(running_total * 100.0 / nullIf(day_total, 0), 2) AS cumulative_pct
@@ -375,7 +375,7 @@ def sql_improvement(ql: ClickHouseQueryList):
                     GROUP BY msisdn, tx_hour
                 ) hourly
             ) windowed
-        ) final
+        ) f
         WHERE msisdn != 0
         ORDER BY msisdn, tx_hour
         LIMIT 200;
