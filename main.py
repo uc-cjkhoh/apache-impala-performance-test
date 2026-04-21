@@ -3,7 +3,7 @@ import argparse
 
 from src.test_query import get_queries
 from src.test_performance import TestPerformance
-from src.clickhouse_query import get_clickhouse_queries
+from src.clickhouse_query import get_queries
 from src.test_clickhouse_performance import TestClickHousePerformance
 from src.compare_performance import ComparePerformance
 from src.plot_charts import PerformanceReport
@@ -26,7 +26,7 @@ def main(args):
     
     elif args.mode == 'test_clickhouse':
         # Test ClickHouse without query cache
-        for query_list in get_clickhouse_queries():
+        for query_list in get_queries():
             tester = TestClickHousePerformance(
                 host=args.ch_host,
                 port=args.ch_port,
