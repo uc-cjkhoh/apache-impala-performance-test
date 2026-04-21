@@ -148,6 +148,6 @@ class TestClickHousePerformance:
             result: DataFrame containing performance data
         """
         return result.to_csv(
-            f'test_result/{clickhouse_version}_no_cache_performance.csv', 
+            f'clickhouse_{clickhouse_version}_no_cache_performance.csv', 
             index=False
         )
