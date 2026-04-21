@@ -97,7 +97,7 @@ class TestClickHousePerformance:
             # SQL validation - check all queries are valid
             for query in self.queries:
                 try:
-                    client.execute(f'EXPLAIN {query}')
+                    client.execute(f'EXPLAIN SYNTAX {query}')
                 except Exception as e:
                     print(f"Error validating query: {e}")
                     raise
