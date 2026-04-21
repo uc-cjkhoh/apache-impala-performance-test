@@ -1,9 +1,9 @@
 import os
 import argparse
 
-from src.test_query import get_queries
+from src.test_query import get_queries as get_impala_queries
 from src.test_performance import TestPerformance
-from src.clickhouse_query import get_queries
+from src.clickhouse_query import get_queries as get_clickhouse_queries
 from src.test_clickhouse_performance import TestClickHousePerformance
 from src.compare_performance import ComparePerformance
 from src.plot_charts import PerformanceReport
@@ -12,7 +12,7 @@ from src.plot_charts import PerformanceReport
 def main(args):
     if args.mode == 'test': 
         # Test Impala (default behavior)
-        for query_list in get_queries():
+        for query_list in get_impala_queries():
             tester = TestPerformance(
                 host=args.host, 
                 port=args.port, 
@@ -26,7 +26,7 @@ def main(args):
     
     elif args.mode == 'test_clickhouse':
         # Test ClickHouse without query cache
-        for query_list in get_queries():
+        for query_list in get_clickhouse_queries():
             tester = TestClickHousePerformance(
                 host=args.ch_host,
                 port=args.ch_port,

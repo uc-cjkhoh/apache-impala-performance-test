@@ -66,7 +66,7 @@ class TestClickHousePerformance:
         This ensures each query runs without cached results.
         """
         try:
-            client.execute('SYSTEM DROP QUERY_RESULT_CACHE')
+            client.execute('SYSTEM DROP QUERY CACHE')
         except Exception as e:
             # Query result cache might not be available in older versions
             print(f"Warning: Could not clear query cache: {e}")
