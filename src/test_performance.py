@@ -34,6 +34,7 @@ class TestPerformance:
                 
                 # cursor.execute(f"SET MT_DOP={mt_dop}")
                 cursor.execute(f"SET MT_DOP=8")
+                cursor.execute(f"SET NUM_NODES=2")
                 
                 # single execution warm-up
                 # cursor.execute(query)
