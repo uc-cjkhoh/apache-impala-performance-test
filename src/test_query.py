@@ -6,7 +6,7 @@ class QueryList:
     queries: list = field(default_factory=list)
     mt_dop: list = field(default_factory=list)
     
-    def add(self, query: str, mt_dop: int = 0):
+    def add(self, query: str, mt_dop: int = 8):
         self.queries.append(query)
         self.mt_dop.append(mt_dop)
           
@@ -27,7 +27,8 @@ def sql_improvement(ql: QueryList):
         WHERE 
             par_year = 2024
             AND par_month = 202401;
-        '''
+        ''',
+        mt_dop=8
     )
     
     # -- Test 1b: COUNT(*) with GROUP BY — partial footer optimization
@@ -42,7 +43,8 @@ def sql_improvement(ql: QueryList):
             AND par_month = 202401
         GROUP BY 
             status;
-        '''
+        ''',
+        mt_dop=8
     )
     
     # -- Test 1c: COUNT(*) per op_code — compare with full scan baseline
@@ -58,7 +60,8 @@ def sql_improvement(ql: QueryList):
             op_code
         ORDER BY 
             op_code;
-        '''
+        ''',
+        mt_dop=8
     )
     
     
@@ -74,7 +77,8 @@ def sql_improvement(ql: QueryList):
         WHERE 
             par_year = 2024
             AND par_month = 202401;
-        '''
+        ''',
+        mt_dop=8
     )
     
     # -- Test 2b: COUNT(*) with MT_DOP=4 (should now use footer-only path)
@@ -88,7 +92,7 @@ def sql_improvement(ql: QueryList):
             par_year = 2024
             AND par_month = 202401;
         ''',
-        mt_dop=4
+        mt_dop=8
     )
     
     # -- Test 2c: COUNT(*) with partition filter + MT_DOP
@@ -103,7 +107,7 @@ def sql_improvement(ql: QueryList):
             AND par_month = 202401
             AND par_date = 20240101;
         ''',
-        mt_dop=4
+        mt_dop=8
     )
     
     
@@ -133,7 +137,8 @@ def sql_improvement(ql: QueryList):
         GROUP BY a.msisdn, a.mcc, a.mnc
         ORDER BY total_tx DESC
         LIMIT 100;
-        '''
+        ''',
+        mt_dop=8
     )
     
     # -- Test 3b: Multi-column runtime filter — join on mcc + op_code
@@ -158,7 +163,8 @@ def sql_improvement(ql: QueryList):
         AND a.par_date = 20240101
         GROUP BY a.tx_hour, a.mcc, a.op_code
         ORDER BY a.tx_hour, a.mcc;
-        ''' 
+        ''' ,
+        mt_dop=8
     ) 
     
     
@@ -185,7 +191,8 @@ def sql_improvement(ql: QueryList):
         AND t.par_date = 20240101
         GROUP BY sub.subs_type, sub.rate_plan
         ORDER BY total_tx DESC;
-        '''
+        ''',
+        mt_dop=8
     )
      
      
@@ -279,7 +286,8 @@ def sql_improvement(ql: QueryList):
             AND par_month = 202401
         GROUP BY 
             status;
-        '''
+        ''',
+        mt_dop=8
     )
     
     # -- Test 6b: Low-cardinality multi-column GROUP BY — few distinct combos
@@ -300,7 +308,8 @@ def sql_improvement(ql: QueryList):
             op_code, bound_type, status
         ORDER BY 
             total_tx DESC;
-        '''
+        ''',
+        mt_dop=8
     )
     
     # -- Test 6c: Low-cardinality GROUP BY on large date range
@@ -320,7 +329,8 @@ def sql_improvement(ql: QueryList):
             tx_month, tx_week, op_code, status
         ORDER BY 
             tx_month, tx_week;
-        '''
+        ''',
+        mt_dop=8
     )
     
     
@@ -335,7 +345,8 @@ def sql_improvement(ql: QueryList):
         AND tx_hour BETWEEN 8 AND 10   -- narrow: ~12.5% of hours
         GROUP BY tx_hour, op_code
         ORDER BY tx_hour;
-        '''
+        ''',
+        mt_dop=8
     )
     
     # -- Test 7b: BETWEEN on module_dt — used in join predicate
@@ -358,7 +369,8 @@ def sql_improvement(ql: QueryList):
         GROUP BY a.msisdn, a.mcc, a.op_code
         ORDER BY tx_count DESC
         LIMIT 50;
-        '''
+        ''',
+        mt_dop=8
     )  
     
     # 4. [4.5.0 | IMPALA-12800] Nested Inline Views — ExprSubstitutionMap Fix
@@ -411,7 +423,8 @@ def sql_improvement(ql: QueryList):
         ) s8
         GROUP BY mcc, rank_in_mcc
         ORDER BY mcc, rank_in_mcc;
-        '''
+        ''',
+        mt_dop=8
     )
     
     # -- Test 8b: Extended nesting with window + aggregation (8 levels)
@@ -445,7 +458,8 @@ def sql_improvement(ql: QueryList):
         WHERE msisdn != 0
         ORDER BY msisdn, tx_hour
         LIMIT 200;
-        '''
+        ''',
+        mt_dop=8
     )
     
     
@@ -462,7 +476,8 @@ def sql_improvement(ql: QueryList):
             AND par_month = 202401 
         GROUP BY 
             mcc, op_code;
-        '''
+        ''',
+        mt_dop=8
     )
     
     # -- Test 9b: Run SECOND time (same scan range — should reuse cached pre-agg)
@@ -478,7 +493,8 @@ def sql_improvement(ql: QueryList):
             AND par_date = 20240101
         GROUP BY 
             mcc, op_code;
-        '''
+        ''',
+        mt_dop=8
     )
     
     # -- Test 9c: Third query — different aggregation, same partition
@@ -498,7 +514,8 @@ def sql_improvement(ql: QueryList):
             mcc, bound_type
         ORDER BY 
             total_tx DESC;
-        '''
+        ''',
+        mt_dop=8
     )
     
     
@@ -517,7 +534,8 @@ def sql_improvement(ql: QueryList):
         AND op_code   = 2           -- single value predicate → agg cardinality reduced
         GROUP BY op_code, tx_hour
         ORDER BY tx_hour;
-        '''
+        ''',
+        mt_dop=8
     )
     
     # -- Test 10b: IN-list predicate — 2 of N possible bound_type values
@@ -531,7 +549,8 @@ def sql_improvement(ql: QueryList):
         AND par_month = 202401
         AND bound_type IN (0, 1)   -- subset of all bound_type values
         GROUP BY bound_type, status;
-        '''
+        ''',
+        mt_dop=8
     )
     
     # -- Test 10c: TupleId tracing — multi-join, filter on dim-side tuple
@@ -553,7 +572,8 @@ def sql_improvement(ql: QueryList):
         WHERE visited.par_year  = 2024
         AND visited.par_month = 202401
         GROUP BY visited.mcc, home.mcc_ref;
-        '''
+        ''',
+        mt_dop=8
     )
     
     
@@ -578,7 +598,7 @@ def sql_improvement(ql: QueryList):
         ORDER BY total_tx DESC
         LIMIT 500; 
         ''',
-        mt_dop=4
+        mt_dop=8
     )
     
     # -- Test 11b: Large distributed join — forces hash-partition exchange on both sides
@@ -611,7 +631,7 @@ def sql_improvement(ql: QueryList):
         GROUP BY a.msisdn, a.mcc, a.vlr, b.op_code 
         LIMIT 200; 
         ''',
-        mt_dop=4
+        mt_dop=8
     )
     
     return ql

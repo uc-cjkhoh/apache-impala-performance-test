@@ -3,6 +3,7 @@ import pandas as pd
 from tqdm import tqdm
 from time import perf_counter
 from clickhouse_driver import Client
+from datetime import datetime
 
 
 class TestClickHousePerformance:
@@ -148,6 +149,6 @@ class TestClickHousePerformance:
             result: DataFrame containing performance data
         """
         return result.to_csv(
-            f'clickhouse_{clickhouse_version}_no_cache_performance.csv', 
+            f'clickhouse_{datetime.now().strftime('%y%M%D_%H%m%s')}_no_cache_performance.csv', 
             index=False
         )

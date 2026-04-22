@@ -39,7 +39,7 @@ class TestPerformance:
                 
                 for i in tqdm(range(self.iteration)):
                     # clear metadata cache
-                    cursor.execute('INVALIDATE METADATA')
+                    # cursor.execute('INVALIDATE METADATA')
                     
                     # get starting time
                     start_time = perf_counter()
