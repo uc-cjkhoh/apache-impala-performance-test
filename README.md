@@ -15,7 +15,6 @@ Key features:
 ```
 main.py                              # Main entry point script
 README.md                            
-CLICKHOUSE_TESTING.md                # ClickHouse testing documentation
 requirements.txt                     # Python dependencies
 src/
     __init__.py
@@ -44,8 +43,6 @@ test_result/
 - Executes each query multiple times (configurable iterations)
 - Records execution times with high precision timing
 - Saves results to CSV files in `test_result/`
-
-See [CLICKHOUSE_TESTING.md](CLICKHOUSE_TESTING.md) for detailed ClickHouse documentation.
 
 ### Compare Mode (`--mode compare`)
 - Loads performance CSV files from `test_result/`
@@ -92,6 +89,36 @@ Update the connection parameters for ClickHouse:
 - Database: Default `default`
 - User: Default `default`
 - Password: Optional
+
+## Quick Start
+
+### Install Dependencies
+```bash
+pip install -r requirements.txt
+```
+
+### Run ClickHouse Performance Test
+```bash
+# Default settings: localhost:9000, 10 iterations
+python main.py --mode test_clickhouse
+
+# Custom iterations
+python main.py --mode test_clickhouse --iteration 20
+
+# Remote ClickHouse server
+python main.py --mode test_clickhouse \
+  --ch-host 192.168.1.100 \
+  --ch-port 9000 \
+  --ch-user admin \
+  --ch-password secret \
+  --iteration 15
+```
+
+### View Results
+Results are saved to:
+```
+test_result/clickhouse_version_X_X_X_no_cache_performance.csv
+```
 
 ### Test Queries
 
@@ -193,6 +220,17 @@ This will:
 - Performance comparisons
 - Recommendations for version selection
 
+## Output Format
+The CSV output contains one column per query and one row per iteration, with timing values in seconds.
+
+Example:
+```csv
+SELECT COUNT(*) as total_rows FROM system.query_log,SELECT COUNT(*) as query_count FROM system.query_log WHERE type = 'QueryStart',...
+0.0234,0.0189,...
+0.0241,0.0195,...
+0.0237,0.0192,...
+```
+
 ## ClickHouse Testing Features
 
 ### Query Cache Handling
@@ -214,7 +252,6 @@ Pre-configured queries test:
 9. DISTINCT operations
 10. Sorting and LIMIT
 
-See [CLICKHOUSE_TESTING.md](CLICKHOUSE_TESTING.md) for full details.
 
 ## Statistical Analysis
 
@@ -248,7 +285,6 @@ Results include:
 
 ## Related Documentation
 
-- [CLICKHOUSE_TESTING.md](CLICKHOUSE_TESTING.md) - Detailed ClickHouse testing guide
 - [src/test_clickhouse_performance.py](src/test_clickhouse_performance.py) - ClickHouse implementation
 - [src/clickhouse_query.py](src/clickhouse_query.py) - ClickHouse query definitions
  
