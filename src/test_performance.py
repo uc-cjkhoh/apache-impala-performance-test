@@ -35,11 +35,11 @@ class TestPerformance:
                 cursor.execute(f"SET MT_DOP={mt_dop}")
                 
                 # single execution warm-up
-                cursor.execute(query)
+                # cursor.execute(query)
                 
                 for i in tqdm(range(self.iteration)):
                     # clear metadata cache
-                    # cursor.execute('INVALIDATE METADATA')
+                    cursor.execute('INVALIDATE METADATA')
                     
                     # get starting time
                     start_time = perf_counter()
