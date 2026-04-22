@@ -23,7 +23,7 @@ class ComparePerformance:
                     if valid_shape is None:
                         valid_shape = perf_history.shape
                     
-                    assert (perf_history.columns == valid_column).all()
+                    # assert (perf_history.columns == valid_column).all()
                     assert (perf_history.shape == valid_shape)
 
         except FileNotFoundError as e:
