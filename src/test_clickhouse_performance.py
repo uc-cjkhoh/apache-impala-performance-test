@@ -149,6 +149,6 @@ class TestClickHousePerformance:
             result: DataFrame containing performance data
         """
         return result.to_csv(
-            f'clickhouse_{datetime.now().strftime("%y%M%D_%H%m%s")}_no_cache_performance.csv', 
+            f'clickhouse_{datetime.now().strftime("%y%m%d_%H%M%S")}_no_cache_performance.csv', 
             index=False
         )
