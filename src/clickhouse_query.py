@@ -553,7 +553,6 @@ def sql_improvement(ql: ClickHouseQueryList):
         GROUP BY msisdn, imsi
         ORDER BY total_tx DESC
         LIMIT 500
-        SETTINGS max_threads = 4;
         ''',
         max_threads=4
     )
@@ -589,7 +588,6 @@ def sql_improvement(ql: ClickHouseQueryList):
             AND b.msisdn != 0
         GROUP BY a.msisdn, a.mcc, a.vlr, b.op_code
         LIMIT 200
-        SETTINGS max_threads = 4;
         ''',
         max_threads=4
     )
